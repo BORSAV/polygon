@@ -32,7 +32,7 @@
 <div class="container">
   <div class="logo-wrap">
     <div class="logo-circle">
-      <img src="ChatGPT-Image-Oct-30-2025-12_48_35-PM.jpg" alt="Polygon Senior Secondary School Logo">
+      <img src="ChatGPT-Image-Oct-30-2025-12_48_35-PM.jpg" alt="Polygon Logo">
     </div>
   </div>
   <h2>Polygon Senior Secondary School</h2>
@@ -68,19 +68,19 @@
   <div id="results"></div>
 </div>
 
-<!-- Firebase Core SDK -->
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-// TODO: Replace this with your own Firebase config object
+// TODO: Replace with your Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyD5UcOXsgFyHdIfqENPGPn3qjGy6ZPWsww",
-  authDomain: "polygonattendance.firebaseapp.com",
-  projectId: "polygonattendance",
-  storageBucket: "polygonattendance.firebasestorage.app",
-  messagingSenderId: "298974801497",
-  appId: "1:298974801497:web:6716ba9d25eaabee5a0b48"
+  apiKey: "AIzaSyD3C_5CptcWNUJ35E4MzG-fKy7fTjQDCX8",
+  authDomain: "polygon-fe569.firebaseapp.com",
+  projectId: "polygon-fe569",
+  storageBucket: "polygon-fe569.firebasestorage.app",
+  messagingSenderId: "75984706919",
+  appId: "1:75984706919:web:636bac2ea60839d87423c2"
 };
 
 // Initialize Firebase
@@ -94,21 +94,18 @@ function loadStreams() {
   document.getElementById("rollNo").disabled = true;
   document.getElementById("results").innerHTML = "";
 }
-
 function loadSections() {
   const stream = document.getElementById("streamSelect").value;
   document.getElementById("sectionSelect").disabled = (stream === "");
   document.getElementById("rollNo").disabled = true;
   document.getElementById("results").innerHTML = "";
 }
-
 document.getElementById("sectionSelect").addEventListener("change", function() {
   this.value !== "" ?
     document.getElementById("rollNo").disabled = false :
     document.getElementById("rollNo").disabled = true;
   document.getElementById("results").innerHTML = "";
 });
-
 async function checkAttendance() {
   const cls = document.getElementById("classSelect").value;
   const stream = document.getElementById("streamSelect").value;
