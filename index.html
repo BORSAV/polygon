@@ -67,7 +67,26 @@
   <button onclick="checkAttendance()">Check Attendance</button>
   <div id="results"></div>
 </div>
+
+<!-- Firebase Core SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <script>
+// TODO: Replace this with your own Firebase config object
+const firebaseConfig = {
+  apiKey: "AIzaSyD5UcOXsgFyHdIfqENPGPn3qjGy6ZPWsww",
+  authDomain: "polygonattendance.firebaseapp.com",
+  projectId: "polygonattendance",
+  storageBucket: "polygonattendance.firebasestorage.app",
+  messagingSenderId: "298974801497",
+  appId: "1:298974801497:web:6716ba9d25eaabee5a0b48"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
 function loadStreams() {
   const cls = document.getElementById("classSelect").value;
   document.getElementById("streamSelect").disabled = (cls === "");
@@ -75,19 +94,22 @@ function loadStreams() {
   document.getElementById("rollNo").disabled = true;
   document.getElementById("results").innerHTML = "";
 }
+
 function loadSections() {
   const stream = document.getElementById("streamSelect").value;
   document.getElementById("sectionSelect").disabled = (stream === "");
   document.getElementById("rollNo").disabled = true;
   document.getElementById("results").innerHTML = "";
 }
+
 document.getElementById("sectionSelect").addEventListener("change", function() {
   this.value !== "" ?
     document.getElementById("rollNo").disabled = false :
     document.getElementById("rollNo").disabled = true;
   document.getElementById("results").innerHTML = "";
 });
-function checkAttendance() {
+
+async function checkAttendance() {
   const cls = document.getElementById("classSelect").value;
   const stream = document.getElementById("streamSelect").value;
   const section = document.getElementById("sectionSelect").value;
@@ -97,28 +119,32 @@ function checkAttendance() {
     return;
   }
   let key = `${cls}-${stream}-${section}`;
-  let allData = localStorage.getItem("polygon_students");
-  if(!allData) {
-    document.getElementById("results").innerHTML = "<p>Student details not found.</p>";
-    return;
-  }
-  let data = JSON.parse(allData);
-  let students = data[key] || [];
-  let student = students.find(s => s.roll === roll);
-  if(student) {
-    let present = typeof student.present === "number" ? student.present : 0;
-    let absent = typeof student.absent === "number" ? student.absent : 0;
-    let total = present + absent;
-    let percent = total === 0 ? 0 : Math.round((present / total)*100);
-    document.getElementById("results").innerHTML = `
-      <h3>Attendance for Roll No ${roll} (${student.name})</h3>
-      <p style="margin-bottom:4px;">Class: ${cls} | Stream: ${stream} | Section: ${section}</p>
-      <p>Present: ${present} days</p>
-      <p>Absent: ${absent} days</p>
-      <p style="font-weight:bold;">Attendance %: ${percent}%</p>
-    `;
-  } else {
-    document.getElementById("results").innerHTML = "<p>Student details not found.</p>";
+  try {
+    const doc = await db.collection("polygonStudents").doc(key).get();
+    if(!doc.exists) {
+      document.getElementById("results").innerHTML = "<p>Student details not found.</p>";
+      return;
+    }
+    const students = doc.data().students || [];
+    const student = students.find(s => s.roll === roll);
+    if(student) {
+      let present = typeof student.present === "number" ? student.present : 0;
+      let absent = typeof student.absent === "number" ? student.absent : 0;
+      let total = present + absent;
+      let percent = total === 0 ? 0 : Math.round((present / total)*100);
+      document.getElementById("results").innerHTML = `
+        <h3>Attendance for Roll No ${roll} (${student.name})</h3>
+        <p style="margin-bottom:4px;">Class: ${cls} | Stream: ${stream} | Section: ${section}</p>
+        <p>Present: ${present} days</p>
+        <p>Absent: ${absent} days</p>
+        <p style="font-weight:bold;">Attendance %: ${percent}%</p>
+      `;
+    } else {
+      document.getElementById("results").innerHTML = "<p>Student details not found.</p>";
+    }
+  } catch(error) {
+    console.error(error);
+    document.getElementById("results").innerHTML = "<p>Error fetching data.</p>";
   }
 }
 </script>
