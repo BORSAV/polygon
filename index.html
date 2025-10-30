@@ -68,12 +68,10 @@
   <div id="results"></div>
 </div>
 
-<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-// TODO: Replace with your Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyD3C_5CptcWNUJ35E4MzG-fKy7fTjQDCX8",
   authDomain: "polygon-fe569.firebaseapp.com",
@@ -83,7 +81,6 @@ const firebaseConfig = {
   appId: "1:75984706919:web:636bac2ea60839d87423c2"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
@@ -94,41 +91,42 @@ function loadStreams() {
   document.getElementById("rollNo").disabled = true;
   document.getElementById("results").innerHTML = "";
 }
+
 function loadSections() {
   const stream = document.getElementById("streamSelect").value;
   document.getElementById("sectionSelect").disabled = (stream === "");
   document.getElementById("rollNo").disabled = true;
   document.getElementById("results").innerHTML = "";
 }
+
 document.getElementById("sectionSelect").addEventListener("change", function() {
-  this.value !== "" ?
-    document.getElementById("rollNo").disabled = false :
-    document.getElementById("rollNo").disabled = true;
+  this.value !== "" ? document.getElementById("rollNo").disabled = false : document.getElementById("rollNo").disabled = true;
   document.getElementById("results").innerHTML = "";
 });
+
 async function checkAttendance() {
-  const cls = document.getElementById("classSelect").value;
-  const stream = document.getElementById("streamSelect").value;
-  const section = document.getElementById("sectionSelect").value;
+  const cls = document.getElementById("classSelect").value.trim();
+  const stream = document.getElementById("streamSelect").value.trim();
+  const section = document.getElementById("sectionSelect").value.trim();
   const roll = document.getElementById("rollNo").value.trim();
-  if(!cls || !stream || !section || !roll){
+  if (!cls || !stream || !section || !roll) {
     alert("Please select class, stream, section and enter roll no");
     return;
   }
   let key = `${cls}-${stream}-${section}`;
   try {
     const doc = await db.collection("polygonStudents").doc(key).get();
-    if(!doc.exists) {
+    if (!doc.exists) {
       document.getElementById("results").innerHTML = "<p>Student details not found.</p>";
       return;
     }
     const students = doc.data().students || [];
     const student = students.find(s => s.roll === roll);
-    if(student) {
-      let present = typeof student.present === "number" ? student.present : 0;
-      let absent = typeof student.absent === "number" ? student.absent : 0;
-      let total = present + absent;
-      let percent = total === 0 ? 0 : Math.round((present / total)*100);
+    if (student) {
+      const present = typeof student.present === "number" ? student.present : 0;
+      const absent = typeof student.absent === "number" ? student.absent : 0;
+      const total = present + absent;
+      const percent = total === 0 ? 0 : Math.round((present / total) * 100);
       document.getElementById("results").innerHTML = `
         <h3>Attendance for Roll No ${roll} (${student.name})</h3>
         <p style="margin-bottom:4px;">Class: ${cls} | Stream: ${stream} | Section: ${section}</p>
@@ -139,7 +137,7 @@ async function checkAttendance() {
     } else {
       document.getElementById("results").innerHTML = "<p>Student details not found.</p>";
     }
-  } catch(error) {
+  } catch (error) {
     console.error(error);
     document.getElementById("results").innerHTML = "<p>Error fetching data.</p>";
   }
