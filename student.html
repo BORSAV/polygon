@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Student Attendance – Polygon School</title>
+<style>
+  body { font-family: Arial,sans-serif; background: #f7fbff;margin:0;}
+  .container { background:#fff; max-width:500px; margin:32px auto; border-radius:18px;
+    box-shadow:0 1px 16px #0002; padding:24px;}
+  .logo-wrap { display:flex; justify-content:center; align-items:center; margin-bottom:16px;}
+  .logo-circle {
+    background:#fff;
+    border-radius:50%;
+    box-shadow:0 1px 6px #00339633;
+    width:100px; height:100px;
+    display:flex; align-items:center; justify-content:center;
+    padding:7px;
+  }
+  .logo-circle img { width:85px; height:85px; border-radius:50%; }
+  h2 { color: #114c98; text-align: center; margin-top:0; margin-bottom:14px; }
+  label, select, input { display:block; margin:7px 0; font-size:1rem; }
+  button { padding:6px 15px; background:#114c98; color:#fff; font-weight:600; border:0; border-radius:5px; cursor:pointer;}
+  button:hover { background:#156ddf;}
+  #results { margin:18px 0 0 0; }
+  input[type="text"],input[type="number"] {
+    width:95%;padding:6px; border:1px solid #cee5fc; border-radius:6px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo-wrap">
+    <div class="logo-circle">
+      <img src="ChatGPT-Image-Oct-30-2025-12_48_35-PM.jpg" alt="Polygon Senior Secondary School Logo">
+    </div>
+  </div>
+  <h2>Polygon Senior Secondary School</h2>
+  <label>
+    Class:
+    <select id="classSelect" onchange="loadStreams()">
+      <option value="">Select Class</option>
+      <option value="11">11</option>
+      <option value="12">12</option>
+    </select>
+  </label>
+  <label>
+    Stream:
+    <select id="streamSelect" disabled onchange="loadSections()">
+      <option value="">Select Stream</option>
+      <option value="Arts">Arts</option>
+      <option value="Science">Science</option>
+    </select>
+  </label>
+  <label>
+    Section:
+    <select id="sectionSelect" disabled>
+      <option value="">Select Section</option>
+      <option value="A">A</option>
+      <option value="B">B</option>
+    </select>
+  </label>
+  <label>
+    Roll Number:
+    <input id="rollNo" type="number" disabled />
+  </label>
+  <button onclick="checkAttendance()">Check Attendance</button>
+  <div id="results"></div>
+</div>
+<script>
+function loadStreams() {
+  const cls = document.getElementById("classSelect").value;
+  document.getElementById("streamSelect").disabled = (cls === "");
+  document.getElementById("sectionSelect").disabled = true;
+  document.getElementById("rollNo").disabled = true;
+  document.getElementById("results").innerHTML = "";
+}
+function loadSections() {
+  const stream = document.getElementById("streamSelect").value;
+  document.getElementById("sectionSelect").disabled = (stream === "");
+  document.getElementById("rollNo").disabled = true;
+  document.getElementById("results").innerHTML = "";
+}
+document.getElementById("sectionSelect").addEventListener("change", function() {
+  this.value !== "" ?
+    document.getElementById("rollNo").disabled = false :
+    document.getElementById("rollNo").disabled = true;
+  document.getElementById("results").innerHTML = "";
+});
+function checkAttendance() {
+  const cls = document.getElementById("classSelect").value;
+  const stream = document.getElementById("streamSelect").value;
+  const section = document.getElementById("sectionSelect").value;
+  const roll = document.getElementById("rollNo").value.trim();
+  if(!cls || !stream || !section || !roll){
+    alert("Please select class, stream, section and enter roll no");
+    return;
+  }
+  let key = `${cls}-${stream}-${section}`;
+  let allData = localStorage.getItem("polygon_students");
+  if(!allData) {
+    document.getElementById("results").innerHTML = "<p>Student details not found.</p>";
+    return;
+  }
+  let data = JSON.parse(allData);
+  let students = data[key] || [];
+  let student = students.find(s => s.roll === roll);
+  if(student) {
+    let present = typeof student.present === "number" ? student.present : 0;
+    let absent = typeof student.absent === "number" ? student.absent : 0;
+    let total = present + absent;
+    let percent = total === 0 ? 0 : Math.round((present / total)*100);
+    document.getElementById("results").innerHTML = `
+      <h3>Attendance for Roll No ${roll} (${student.name})</h3>
+      <p style="margin-bottom:4px;">Class: ${cls} | Stream: ${stream} | Section: ${section}</p>
+      <p>Present: ${present} days</p>
+      <p>Absent: ${absent} days</p>
+      <p style="font-weight:bold;">Attendance %: ${percent}%</p>
+    `;
+  } else {
+    document.getElementById("results").innerHTML = "<p>Student details not found.</p>";
+  }
+}
+</script>
+</body>
+</html>
